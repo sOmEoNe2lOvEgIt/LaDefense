@@ -1,44 +1,21 @@
-extern crate caper;
+extern crate kiss3d;
+extern crate nalgebra as na;
 
-use caper::game::*;
-use caper::imgui::Ui;
-use caper::input::Key;
-use caper::mesh::gen_cube;
-use caper::types::{DefaultTag, RenderItemBuilder, TransformBuilder};
-use caper::utils::handle_fp_inputs;
+use na::{Vector3, UnitQuaternion};
+use kiss3d::window::Window;
+use kiss3d::light::Light;
 
 fn main() {
-    // crate an instance of the game struct
-    let (mut game, event_loop) = Game::<DefaultTag>::new();
+    let mut window = Window::new("Kiss3d: cube");
+    let mut c      = window.add_cube(0.1, 0.1, 0.1);
 
-    // define some items to be rendered
-    game.add_render_item(
-        RenderItemBuilder::default()
-            .vertices(gen_cube())
-            .instance_transforms(vec![TransformBuilder::default()
-                .pos((-0.5, 0.0, -5.0))
-                .build()
-                .unwrap()])
-            .build()
-            .unwrap(),
-    );
+    c.set_color(1.0, 0.0, 0.0);
 
-    // run the engine update
-    start_loop(event_loop, move |events| {
-        game.update(
-            |_: &Ui| {},
-            |g: &mut Game<DefaultTag>| -> UpdateStatus {
-                // update the first person inputs
-                handle_fp_inputs(&mut g.input, &mut g.cams[0]);
+    window.set_light(Light::StickToCamera);
 
-                // quit
-                if g.input.keys_down.contains(&Key::Escape) {
-                    return UpdateStatus::Finish;
-                }
+    let rot = UnitQuaternion::from_axis_angle(&Vector3::y_axis(), 0.014);
 
-                UpdateStatus::Continue
-            },
-            events,
-        )
-    });
+    while window.render() {
+        c.prepend_to_local_rotation(&rot);
+    }
 }
