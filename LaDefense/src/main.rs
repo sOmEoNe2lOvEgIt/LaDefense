@@ -1,3 +1,5 @@
+mod print_my_text;
+
 fn main() {
-    println!("Hello, world!");
+    print_my_text::print_my_text("Hello, world!");
 }
